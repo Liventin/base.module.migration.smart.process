@@ -4,7 +4,7 @@ defined('B_PROLOG_INCLUDED') || die;
 use Base\Module\Src\Migration\SmartProcess\MigrateSmartProcessService;
 
 return [
-    'base.module.migration.smart.process' => [
+    'base.module.migration.smart.process.service' => [
         'className' => MigrateSmartProcessService::class,
         'constructorParams' => [],
     ],
