@@ -5,22 +5,16 @@ namespace Base\Module\Install;
 use Base\Module\Install\Interface\Install;
 use Base\Module\Install\Interface\ReInstall;
 use Base\Module\Service\Container;
+use Base\Module\Exception\ModuleException;
 use Base\Module\Service\Migration\SmartProcess\MigrateSmartProcessEntity;
 use Base\Module\Service\Migration\SmartProcess\MigrateSmartProcessService as IMigrateSmartProcessService;
 use Base\Module\Service\Tool\ClassList;
-use Bitrix\Main\ObjectNotFoundException;
-use Bitrix\Main\SystemException;
-use Psr\Container\NotFoundExceptionInterface;
-use ReflectionException;
 
 class SmartProcessInstaller implements Install, ReInstall
 {
     /**
      * @return array
-     * @throws NotFoundExceptionInterface
-     * @throws ObjectNotFoundException
-     * @throws ReflectionException
-     * @throws SystemException
+     * @throws ModuleException
      */
     private function getSmartProcessList(): array
     {
@@ -30,10 +24,7 @@ class SmartProcessInstaller implements Install, ReInstall
     }
 
     /**
-     * @throws NotFoundExceptionInterface
-     * @throws ObjectNotFoundException
-     * @throws ReflectionException
-     * @throws SystemException
+     * @throws ModuleException
      */
     public function install(): void
     {
@@ -43,10 +34,7 @@ class SmartProcessInstaller implements Install, ReInstall
     }
 
     /**
-     * @throws NotFoundExceptionInterface
-     * @throws ObjectNotFoundException
-     * @throws ReflectionException
-     * @throws SystemException
+     * @throws ModuleException
      */
     public function reInstall(): void
     {
