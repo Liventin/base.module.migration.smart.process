@@ -70,8 +70,17 @@ class SmartProcessExample implements MigrateSmartProcessEntity
         ${DS}config = ${DS}service->getParamsConstructor();
 
         return ${DS}config
-            ->setIsUseInUserfieldEnabled()
+            ->setIsOpenPermissions(false)
             ->getParamsInArray();
     }
 }
 ```
+
+## Права доступа при создании воронки (`IS_SET_OPEN_PERMISSIONS`)
+
+Параметр «Права доступа при создании воронки» задаётся через `ParamsConstructor::setIsOpenPermissions(bool)`.
+
+- `false` (`'N'`) — после создания смарт-процесса **доступ к его воронкам закрывается для всех ролей, кроме администраторских**. Это перекрывает дефолтное поведение ядра Bitrix, которое при создании воронки автоматически выдаёт права ролям по их пресетам (MANAGER → «свои», DEPUTY → «отдел», HEAD → «все»).
+- `true` (`'Y'`) — поведение ядра не меняется: права выдаются как обычно.
+
+Закрытие выполняется **фоновой задачей** (поставленной в очередь ПОСЛЕ задачи ядра, которая выдаёт права), чтобы гарантированно перекрыть выдачу прав ядром. Используется штатный метод ядра `CCrmRole::EraseEntityPermissionsForNotAdminRoles()`.

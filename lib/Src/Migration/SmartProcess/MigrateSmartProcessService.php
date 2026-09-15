@@ -4,10 +4,13 @@
 
 namespace Base\Module\Src\Migration\SmartProcess;
 
+use Base\Module\Service\Container;
 use Base\Module\Service\LazyService;
+use Base\Module\Service\Migration\SmartProcess\ClosePermissionsOnCategoriesService as IClosePermissionsOnCategoriesService;
 use Base\Module\Service\Migration\SmartProcess\MigrateSmartProcessEntity;
 use Base\Module\Service\Migration\SmartProcess\MigrateSmartProcessService as IMigrateSmartProcessService;
 use Bitrix\Crm\Model\Dynamic\TypeTable;
+use Bitrix\Main\Application;
 use Bitrix\Main\ArgumentException;
 use Bitrix\Main\Loader;
 use Bitrix\Main\LoaderException;
@@ -70,11 +73,38 @@ class MigrateSmartProcessService implements IMigrateSmartProcessService
                 $entityParams['NAME'] = $name;
                 $entityParams['TITLE'] = $entity::getTitle();
                 $entityParams['ENTITY_TYPE_ID'] = TypeTable::getNextAvailableEntityTypeId();
-                
+
                 TypeTable::add($entityParams);
 
+                // Если доступ к воронкам при создании закрыт (IS_SET_OPEN_PERMISSIONS = N),
+                // ядро Bitrix всё равно выдаёт не-администраторским ролям права на новую воронку
+                // (пресеты по коду роли: MANAGER/DEPUTY/HEAD/OBSERVER).
+                // Закрываем доступ фоновой задачей ПОСЛЕ задачи ядра, чтобы перекрыть её выдачу.
+                if ($entityParams['IS_SET_OPEN_PERMISSIONS'] === 'N') {
+                    $this->scheduleClosePermissions((int)$entityParams['ENTITY_TYPE_ID']);
+                }
             }
         }
+    }
+
+    /**
+     * Ставит фоновую задачу закрытия прав на воронки смарт-процесса для не-админских ролей.
+     * Выполняется после фоновой задачи ядра (DefaultCategoryPermissions), которая
+     * автоматически выдаёт права ролям при создании воронки.
+     *
+     * @param int $entityTypeId Entity type id смарт-процесса.
+     * @throws ArgumentException
+     * @throws SystemException
+     */
+    private function scheduleClosePermissions(int $entityTypeId): void
+    {
+        /** @var IClosePermissionsOnCategoriesService $closePermissionsService */
+        $closePermissionsService = Container::get(IClosePermissionsOnCategoriesService::SERVICE_CODE);
+
+        Application::getInstance()->addBackgroundJob(
+            [$closePermissionsService, 'closeForNotAdminRoles'],
+            [$entityTypeId]
+        );
     }
 
     /**
