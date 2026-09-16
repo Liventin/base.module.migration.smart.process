@@ -77,9 +77,10 @@ class MigrateSmartProcessService implements IMigrateSmartProcessService
                 TypeTable::add($entityParams);
 
                 // Если доступ к воронкам при создании закрыт (IS_SET_OPEN_PERMISSIONS = N),
-                // ядро Bitrix всё равно выдаёт не-администраторским ролям права на новую воронку
+                // ядро Bitrix всё равно выдаёт ролям права на новую воронку
                 // (пресеты по коду роли: MANAGER/DEPUTY/HEAD/OBSERVER).
-                // Закрываем доступ фоновой задачей ПОСЛЕ задачи ядра, чтобы перекрыть её выдачу.
+                // Выставляем нулевые права всем ролям фоновой задачей ПОСЛЕ задачи ядра,
+                // чтобы перекрыть её выдачу.
                 if ($entityParams['IS_SET_OPEN_PERMISSIONS'] === 'N') {
                     $this->scheduleClosePermissions((int)$entityParams['ENTITY_TYPE_ID']);
                 }
@@ -88,7 +89,7 @@ class MigrateSmartProcessService implements IMigrateSmartProcessService
     }
 
     /**
-     * Ставит фоновую задачу закрытия прав на воронки смарт-процесса для не-админских ролей.
+     * Ставит фоновую задачу выставления нулевых прав на воронки смарт-процесса всем ролям.
      * Выполняется после фоновой задачи ядра (DefaultCategoryPermissions), которая
      * автоматически выдаёт права ролям при создании воронки.
      *
@@ -102,7 +103,7 @@ class MigrateSmartProcessService implements IMigrateSmartProcessService
         $closePermissionsService = Container::get(IClosePermissionsOnCategoriesService::SERVICE_CODE);
 
         Application::getInstance()->addBackgroundJob(
-            [$closePermissionsService, 'closeForNotAdminRoles'],
+            [$closePermissionsService, 'closePermissions'],
             [$entityTypeId]
         );
     }
