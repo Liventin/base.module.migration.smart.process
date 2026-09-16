@@ -4,9 +4,7 @@
 
 namespace Base\Module\Src\Migration\SmartProcess;
 
-use Base\Module\Service\Container;
 use Base\Module\Service\LazyService;
-use Base\Module\Service\Migration\SmartProcess\ClosePermissionsOnCategoriesService as IClosePermissionsOnCategoriesService;
 use Base\Module\Service\Migration\SmartProcess\MigrateSmartProcessEntity;
 use Base\Module\Service\Migration\SmartProcess\MigrateSmartProcessService as IMigrateSmartProcessService;
 use Bitrix\Crm\Model\Dynamic\TypeTable;
@@ -76,11 +74,6 @@ class MigrateSmartProcessService implements IMigrateSmartProcessService
 
                 TypeTable::add($entityParams);
 
-                // Если доступ к воронкам при создании закрыт (IS_SET_OPEN_PERMISSIONS = N),
-                // ядро Bitrix всё равно выдаёт ролям права на новую воронку
-                // (пресеты по коду роли: MANAGER/DEPUTY/HEAD/OBSERVER).
-                // Выставляем нулевые права всем ролям фоновой задачей ПОСЛЕ задачи ядра,
-                // чтобы перекрыть её выдачу.
                 if ($entityParams['IS_SET_OPEN_PERMISSIONS'] === 'N') {
                     $this->scheduleClosePermissions((int)$entityParams['ENTITY_TYPE_ID']);
                 }
@@ -88,19 +81,9 @@ class MigrateSmartProcessService implements IMigrateSmartProcessService
         }
     }
 
-    /**
-     * Ставит фоновую задачу выставления нулевых прав на воронки смарт-процесса всем ролям.
-     * Выполняется после фоновой задачи ядра (DefaultCategoryPermissions), которая
-     * автоматически выдаёт права ролям при создании воронки.
-     *
-     * @param int $entityTypeId Entity type id смарт-процесса.
-     * @throws ArgumentException
-     * @throws SystemException
-     */
     private function scheduleClosePermissions(int $entityTypeId): void
     {
-        /** @var IClosePermissionsOnCategoriesService $closePermissionsService */
-        $closePermissionsService = Container::get(IClosePermissionsOnCategoriesService::SERVICE_CODE);
+        $closePermissionsService = ClosePermissionsOnCategoriesService::getInstance();
 
         Application::getInstance()->addBackgroundJob(
             [$closePermissionsService, 'closePermissions'],

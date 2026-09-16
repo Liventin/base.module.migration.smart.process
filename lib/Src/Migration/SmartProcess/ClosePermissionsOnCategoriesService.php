@@ -1,30 +1,33 @@
 <?php
 
-/** @noinspection PhpUnused */
-
 namespace Base\Module\Src\Migration\SmartProcess;
 
-use Base\Module\Service\LazyService;
-use Base\Module\Service\Migration\SmartProcess\ClosePermissionsOnCategoriesService as IClosePermissionsOnCategoriesService;
 use Bitrix\Crm\Category\PermissionEntityTypeHelper;
 use Bitrix\Main\Loader;
 use Bitrix\Main\LoaderException;
 use CCrmRole;
 
-#[LazyService(serviceCode: IClosePermissionsOnCategoriesService::SERVICE_CODE, constructorParams: [])]
-class ClosePermissionsOnCategoriesService implements IClosePermissionsOnCategoriesService
+class ClosePermissionsOnCategoriesService
 {
+    private static ?self $instance = null;
+
     /**
      * @throws LoaderException
      */
-    public function __construct()
+    private function __construct()
     {
         Loader::requireModule('crm');
     }
 
-    /**
-     * @inheritdoc
-     */
+    public static function getInstance(): self
+    {
+        if (self::$instance === null) {
+            self::$instance = new self();
+        }
+
+        return self::$instance;
+    }
+
     public function closePermissions(int $entityTypeId): void
     {
         $permissionEntities = (new PermissionEntityTypeHelper($entityTypeId))
