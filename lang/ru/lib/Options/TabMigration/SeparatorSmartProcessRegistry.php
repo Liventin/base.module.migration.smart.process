@@ -1,0 +1,3 @@
+<?php
+
+$MESS['MODULE_OPTION_SMART_PROCESS_SEPARATOR_TITLE'] = 'Смарт-процессы';
