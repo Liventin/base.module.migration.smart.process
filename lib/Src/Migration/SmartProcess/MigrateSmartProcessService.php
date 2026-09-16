@@ -24,6 +24,8 @@ class MigrateSmartProcessService implements IMigrateSmartProcessService
      */
     public array $smartProcessList = [];
 
+    private ?ClosePermissionsOnCategoriesService $closePermissionsService = null;
+
     /**
      * @throws LoaderException
      */
@@ -83,12 +85,19 @@ class MigrateSmartProcessService implements IMigrateSmartProcessService
 
     private function scheduleClosePermissions(int $entityTypeId): void
     {
-        $closePermissionsService = ClosePermissionsOnCategoriesService::getInstance();
-
         Application::getInstance()->addBackgroundJob(
-            [$closePermissionsService, 'closePermissions'],
+            [$this->getClosePermissionsService(), 'closePermissions'],
             [$entityTypeId]
         );
+    }
+
+    private function getClosePermissionsService(): ClosePermissionsOnCategoriesService
+    {
+        if ($this->closePermissionsService === null) {
+            $this->closePermissionsService = new ClosePermissionsOnCategoriesService();
+        }
+
+        return $this->closePermissionsService;
     }
 
     /**

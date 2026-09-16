@@ -9,23 +9,12 @@ use CCrmRole;
 
 class ClosePermissionsOnCategoriesService
 {
-    private static ?self $instance = null;
-
     /**
      * @throws LoaderException
      */
-    private function __construct()
+    public function __construct()
     {
         Loader::requireModule('crm');
-    }
-
-    public static function getInstance(): self
-    {
-        if (self::$instance === null) {
-            self::$instance = new self();
-        }
-
-        return self::$instance;
     }
 
     public function closePermissions(int $entityTypeId): void
