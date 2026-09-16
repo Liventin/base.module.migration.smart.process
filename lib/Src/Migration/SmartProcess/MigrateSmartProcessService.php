@@ -8,6 +8,7 @@ use Base\Module\Service\LazyService;
 use Base\Module\Service\Migration\SmartProcess\MigrateSmartProcessEntity;
 use Base\Module\Service\Migration\SmartProcess\MigrateSmartProcessService as IMigrateSmartProcessService;
 use Bitrix\Crm\Model\Dynamic\TypeTable;
+use Bitrix\Main\Application;
 use Bitrix\Main\ArgumentException;
 use Bitrix\Main\Loader;
 use Bitrix\Main\LoaderException;
@@ -22,6 +23,8 @@ class MigrateSmartProcessService implements IMigrateSmartProcessService
      * @var MigrateSmartProcessEntity[]
      */
     public array $smartProcessList = [];
+
+    private ?ClosePermissionsOnCategoriesService $closePermissionsService = null;
 
     /**
      * @throws LoaderException
@@ -70,11 +73,31 @@ class MigrateSmartProcessService implements IMigrateSmartProcessService
                 $entityParams['NAME'] = $name;
                 $entityParams['TITLE'] = $entity::getTitle();
                 $entityParams['ENTITY_TYPE_ID'] = TypeTable::getNextAvailableEntityTypeId();
-                
+
                 TypeTable::add($entityParams);
 
+                if ($entityParams['IS_SET_OPEN_PERMISSIONS'] === 'N') {
+                    $this->scheduleClosePermissions((int)$entityParams['ENTITY_TYPE_ID']);
+                }
             }
         }
+    }
+
+    private function scheduleClosePermissions(int $entityTypeId): void
+    {
+        Application::getInstance()->addBackgroundJob(
+            [$this->getClosePermissionsService(), 'closePermissions'],
+            [$entityTypeId]
+        );
+    }
+
+    private function getClosePermissionsService(): ClosePermissionsOnCategoriesService
+    {
+        if ($this->closePermissionsService === null) {
+            $this->closePermissionsService = new ClosePermissionsOnCategoriesService();
+        }
+
+        return $this->closePermissionsService;
     }
 
     /**
