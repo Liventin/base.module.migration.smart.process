@@ -5,9 +5,11 @@ namespace Base\Module\Options\TabMigration;
 use Base\Module\Exception\ModuleException;
 use Base\Module\Options\TabMigration;
 use Base\Module\Service\Container;
+use Base\Module\Service\Migration\SmartProcess\MigrateSmartProcessEntity;
 use Base\Module\Service\Migration\SmartProcess\MigrateSmartProcessService as IMigrateSmartProcessService;
 use Base\Module\Service\Options\Option;
 use Base\Module\Service\Options\OptionsService;
+use Base\Module\Service\Tool\ClassList;
 use Base\Module\Src\Options\Providers\TableProvider;
 use Bitrix\Main\Localization\Loc;
 
@@ -56,8 +58,16 @@ class SmartProcessRegistry implements Option
         /** @var IMigrateSmartProcessService $smartProcessService */
         $smartProcessService = Container::get(IMigrateSmartProcessService::SERVICE_CODE);
 
+        /** @var ClassList $classList */
+        $classList = Container::get(ClassList::SERVICE_CODE);
+        $smartProcesses = $classList
+            ->setSubClassesFilter([MigrateSmartProcessEntity::class])
+            ->getFromLib('Migration');
+
         $rows = [];
-        foreach ($smartProcessService->getSmartProcessStatus() as $smartProcess) {
+        foreach ($smartProcessService
+            ->setSmartProcessList($smartProcesses)
+            ->getSmartProcessStatus() as $smartProcess) {
             $rows[] = [
                 'cells' => [
                     [
