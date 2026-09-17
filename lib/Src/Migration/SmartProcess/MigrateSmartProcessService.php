@@ -161,11 +161,16 @@ class MigrateSmartProcessService implements IMigrateSmartProcessService
 
         $status = [];
         foreach ($entityClasses as $class) {
+            $name = $class::getName();
+            $row = $enabled[$name] ?? null;
+
             $status[] = [
-                'name' => $class::getName(),
+                'name' => $name,
                 'title' => $class::getTitle(),
                 'code' => $class::getCode(),
-                'exists' => isset($enabled[$class::getName()]),
+                'exists' => $row !== null,
+                'id' => (string)($row['ID'] ?? ''),
+                'entityTypeId' => (string)($row['ENTITY_TYPE_ID'] ?? ''),
             ];
         }
 

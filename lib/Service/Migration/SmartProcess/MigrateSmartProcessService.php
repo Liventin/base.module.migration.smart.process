@@ -21,6 +21,8 @@ interface MigrateSmartProcessService
      *     title: string,
      *     code: string,
      *     exists: bool,
+     *     id: string,
+     *     entityTypeId: string,
      * }>
      */
     public function getSmartProcessStatus(): array;

@@ -68,6 +68,9 @@ class SmartProcessRegistry implements Option
                         ),
                         'status' => $smartProcess['exists'] ? 'ok' : 'no',
                     ],
+                    $smartProcess['id'],
+                    $smartProcess['entityTypeId'],
+                    $smartProcess['name'],
                     $smartProcess['title'],
                     $smartProcess['code'],
                 ],
@@ -78,6 +81,9 @@ class SmartProcessRegistry implements Option
         return $provider
             ->setColumns([
                 Loc::getMessage('MODULE_OPTION_SMART_PROCESS_REGISTRY_COL_STATUS'),
+                Loc::getMessage('MODULE_OPTION_SMART_PROCESS_REGISTRY_COL_ID'),
+                Loc::getMessage('MODULE_OPTION_SMART_PROCESS_REGISTRY_COL_ENTITY_TYPE_ID'),
+                Loc::getMessage('MODULE_OPTION_SMART_PROCESS_REGISTRY_COL_NAME'),
                 Loc::getMessage('MODULE_OPTION_SMART_PROCESS_REGISTRY_COL_TITLE'),
                 Loc::getMessage('MODULE_OPTION_SMART_PROCESS_REGISTRY_COL_CODE'),
             ])
