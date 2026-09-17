@@ -14,4 +14,16 @@ interface MigrateSmartProcessService
     public function install(): void;
     public function reInstall(): void;
     public function getParamsConstructor(): object;
+
+    /**
+     * @return array<int, array{
+     *     name: string,
+     *     title: string,
+     *     code: string,
+     *     exists: bool,
+     *     id: string,
+     *     entityTypeId: string,
+     * }>
+     */
+    public function getSmartProcessStatus(): array;
 }

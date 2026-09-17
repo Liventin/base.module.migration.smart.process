@@ -136,4 +136,39 @@ class MigrateSmartProcessService implements IMigrateSmartProcessService
             'NAME'
         );
     }
+
+    /**
+     * @return array<int, array{
+     *     name: string,
+     *     title: string,
+     *     code: string,
+     *     exists: bool,
+     * }>
+     * @throws ModuleException
+     */
+    public function getSmartProcessStatus(): array
+    {
+        if (empty($this->smartProcessList)) {
+            return [];
+        }
+
+        $enabled = $this->getEnabledSmartProcess();
+
+        $status = [];
+        foreach ($this->smartProcessList as $class) {
+            $name = $class::getName();
+            $row = $enabled[$name] ?? null;
+
+            $status[] = [
+                'name' => $name,
+                'title' => $class::getTitle(),
+                'code' => $class::getCode(),
+                'exists' => $row !== null,
+                'id' => (string)($row['ID'] ?? ''),
+                'entityTypeId' => (string)($row['ENTITY_TYPE_ID'] ?? ''),
+            ];
+        }
+
+        return $status;
+    }
 }

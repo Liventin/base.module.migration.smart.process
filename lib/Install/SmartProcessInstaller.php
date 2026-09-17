@@ -28,9 +28,9 @@ class SmartProcessInstaller implements Install, ReInstall
      */
     public function install(): void
     {
-        /** @var IMigrateSmartProcessService $userFieldService */
-        $userFieldService = Container::get(IMigrateSmartProcessService::SERVICE_CODE);
-        $userFieldService->setSmartProcessList($this->getSmartProcessList())->install();
+        /** @var IMigrateSmartProcessService $smartProcessService */
+        $smartProcessService = Container::get(IMigrateSmartProcessService::SERVICE_CODE);
+        $smartProcessService->setSmartProcessList($this->getSmartProcessList())->install();
     }
 
     /**
@@ -38,9 +38,9 @@ class SmartProcessInstaller implements Install, ReInstall
      */
     public function reInstall(): void
     {
-        /** @var IMigrateSmartProcessService $userFieldService */
-        $userFieldService = Container::get(IMigrateSmartProcessService::SERVICE_CODE);
-        $userFieldService->setSmartProcessList($this->getSmartProcessList())->reInstall();
+        /** @var IMigrateSmartProcessService $smartProcessService */
+        $smartProcessService = Container::get(IMigrateSmartProcessService::SERVICE_CODE);
+        $smartProcessService->setSmartProcessList($this->getSmartProcessList())->reInstall();
     }
 
     public function getInstallSort(): int
