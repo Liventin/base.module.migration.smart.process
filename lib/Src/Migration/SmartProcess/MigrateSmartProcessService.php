@@ -7,6 +7,8 @@ namespace Base\Module\Src\Migration\SmartProcess;
 use Base\Module\Service\LazyService;
 use Base\Module\Service\Migration\SmartProcess\MigrateSmartProcessEntity;
 use Base\Module\Service\Migration\SmartProcess\MigrateSmartProcessService as IMigrateSmartProcessService;
+use Base\Module\Service\Container;
+use Base\Module\Service\Tool\ClassList;
 use Bitrix\Crm\Model\Dynamic\TypeTable;
 use Bitrix\Main\Application;
 use Bitrix\Main\ArgumentException;
@@ -135,5 +137,52 @@ class MigrateSmartProcessService implements IMigrateSmartProcessService
             null,
             'NAME'
         );
+    }
+
+    /**
+     * @return array<int, array{
+     *     name: string,
+     *     title: string,
+     *     code: string,
+     *     exists: bool,
+     * }>
+     * @throws ModuleException
+     */
+    public function getSmartProcessStatus(): array
+    {
+        $entityClasses = $this->getEntityClasses();
+
+        if (empty($entityClasses)) {
+            return [];
+        }
+
+        $this->setSmartProcessList($entityClasses);
+        $enabled = $this->getEnabledSmartProcess();
+
+        $status = [];
+        foreach ($entityClasses as $class) {
+            $status[] = [
+                'name' => $class::getName(),
+                'title' => $class::getTitle(),
+                'code' => $class::getCode(),
+                'exists' => isset($enabled[$class::getName()]),
+            ];
+        }
+
+        return $status;
+    }
+
+    /**
+     * @return array<int, class-string>
+     * @throws ModuleException
+     */
+    private function getEntityClasses(): array
+    {
+        /** @var ClassList $classList */
+        $classList = Container::get(ClassList::SERVICE_CODE);
+
+        return $classList
+            ->setSubClassesFilter([MigrateSmartProcessEntity::class])
+            ->getFromLib('Migration');
     }
 }
